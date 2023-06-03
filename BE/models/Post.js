@@ -130,6 +130,7 @@ Post.reusablePostQuery = function (
 					$project: {
 						title: 1,
 						body: 1,
+						image: 1,
 						createdDate: 1,
 						authorId: '$author',
 						author: { $arrayElemAt: ['$authorDocument', 0] },
