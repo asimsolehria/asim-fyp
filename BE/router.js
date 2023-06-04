@@ -7,7 +7,7 @@ const cors = require('cors');
 const multer = require('multer');
 
 const upload = multer({
-	dest: 'uploads/',
+	dest: 'public/uploads/',
 });
 
 apiRouter.use(cors());

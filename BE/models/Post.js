@@ -60,8 +60,9 @@ Post.prototype.create = function (req) {
 				// save post into database
 				this.data.image = {
 					name: req.file.originalname,
-					url: req.file.path + '.jpg',
+					url: req.file.path.slice(6) + '.jpg',
 				};
+				console.log('Image data: ', this.data.image);
 				postsCollection
 					.insertOne(this.data)
 					.then((info) => {
