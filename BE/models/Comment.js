@@ -56,3 +56,90 @@ Comment.prototype.create = function (req) {
 		}
 	});
 };
+
+Comment.reusableCommentQuery = function (
+	uniqueOperations,
+	visitorId,
+	finalOperations = []
+) {
+	return new Promise(async function (resolve, reject) {
+		let aggOperations = uniqueOperations
+			.concat([
+				{
+					$lookup: {
+						from: 'users',
+						localField: 'author',
+						foreignField: '_id',
+						as: 'authorDocument',
+					},
+				},
+				{
+					$project: {
+						title: 1,
+						body: 1,
+						createdDate: 1,
+						authorId: '$author',
+						author: { $arrayElemAt: ['$authorDocument', 0] },
+					},
+				},
+			])
+			.concat(finalOperations);
+
+		let comments = await commentsCollection.aggregate(aggOperations).toArray();
+
+		// clean up author property in each post object
+		comments = comments.map(function (post) {
+			comment.isVisitorOwner = post.authorId.equals(visitorId);
+			comment.authorId = undefined;
+
+			comment.author = {
+				username: comment.author.username,
+			};
+
+			return comment;
+		});
+
+		resolve(comments);
+	});
+};
+
+Comment.findSingleById = function (id, visitorId) {
+	return new Promise(async function (resolve, reject) {
+		if (typeof id != 'string' || !ObjectID.isValid(id)) {
+			reject();
+			return;
+		}
+
+		let comments = await Comment.reusableCommentQuery(
+			[{ $match: { _id: new ObjectID(id) } }],
+			visitorId
+		);
+
+		if (comments.length) {
+			resolve(comments[0]);
+		} else {
+			reject();
+		}
+	});
+};
+
+Comment.delete = function (commentIdToDelete, currentUserId) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			let comment = await Comment.findSingleById(
+				commentIdToDelete,
+				currentUserId
+			);
+			if (comment.isVisitorOwner) {
+				await commentsCollection.deleteOne({
+					_id: new ObjectID(commentIdToDelete),
+				});
+				resolve();
+			} else {
+				reject();
+			}
+		} catch (e) {
+			reject();
+		}
+	});
+};

@@ -57,9 +57,14 @@ apiRouter.put('/post/like', userController.apiMustBeLoggedIn);
 
 // comment routes
 apiRouter.put(
-	'/post/comment',
+	'/post/comment/create',
 	userController.apiMustBeLoggedIn,
 	commentController.apiCreate
+);
+apiRouter.put(
+	'/post/comment/delete',
+	userController.apiMustBeLoggedIn,
+	commentController.apiDelete
 );
 
 // profile related routes
