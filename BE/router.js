@@ -2,6 +2,7 @@ const apiRouter = require('express').Router();
 const userController = require('./controllers/userController');
 const postController = require('./controllers/postController');
 const followController = require('./controllers/followController');
+const commentController = require('./controllers/commentController');
 const cors = require('cors');
 const multer = require('multer');
 
@@ -49,6 +50,17 @@ apiRouter.post('/search', postController.search);
 
 apiRouter.post('/doesUsernameExist', userController.doesUsernameExist);
 apiRouter.post('/doesEmailExist', userController.doesEmailExist);
+
+// like/unlike routes
+apiRouter.put('/post/like', userController.apiMustBeLoggedIn);
+apiRouter.put('/post/like', userController.apiMustBeLoggedIn);
+
+// comment routes
+apiRouter.put(
+	'/post/comment',
+	userController.apiMustBeLoggedIn,
+	commentController.apiCreate
+);
 
 // profile related routes
 apiRouter.post(

@@ -58,11 +58,12 @@ Post.prototype.create = function (req) {
 			// Saving the image file
 			fs.rename(req.file.path, req.file.path + '.jpg', (err) => {
 				// save post into database
+				this.data.image = {
+					name: req.file.originalname,
+					url: req.file.path + '.jpg',
+				};
 				postsCollection
-					.insertOne({
-						...this.data,
-						image: { name: req.file.originalname, url: req.file.path + '.jpg' },
-					})
+					.insertOne(this.data)
 					.then((info) => {
 						resolve(info.insertedId);
 					})
